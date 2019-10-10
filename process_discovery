@@ -1,0 +1,48 @@
+#!/usr/lib/python3
+
+import psutil;
+import json;
+import sys;
+
+tdata_list=[];
+name_list=[];
+
+if(len(sys.argv)<2):
+    for pid in psutil.pids(): # pid is proccess number in Lis
+            proc=psutil.Process(pid);  # get the proccess with the number(pid)
+            ignore_process_list=['init','kthreadd','kworker/','migration','rcu_bh','watchdog','ksoftirqd/','rcu_sched',
+                                 'khelper','kdevtmpfs','ksmd','khugepaged','writeback','crypto','kintegrityd',
+                                 'bioset','kswap0','kblockd','vmstat','fsnotify_mark','kthrotld',
+                                 'ipv6_addrconf','deferwq','kpsmpoused','khubd','ata_sff','mpt_poll_',
+                                 'mpt/','scsi_eh_','scsi_tmf_','atd'
+                                 'jdb2/sd','ext4-rsv-conver','udevd','bash','systemd-logind','ttm_swap','uuidd','cgmanager',
+                                 'acpid','daemon','mpt-statusd','ard','dbus-daemon','login','getty','kauditd','sleep','None',
+                                 'netns','khungtaskd','kswapd','kpsmoused','jbd2/sd','atd','less'];
+
+            white_service_list=['rsyslogd','sshd','irqbalance','cron','server','apache','mysql','mariadb',
+                                'agentd','snmp','catalina','http','shbk','zabbix'];
+            #if proc.name() not in ignore_process_list:
+            if  bool([ele.lower() for ele in white_service_list if (ele in proc.name().lower())]):
+                #for ig_name in ignore_process_list:
+                #if ig_name not in proc.name()
+                    #print(pid ,"  " , proc.name() , "  " , proc.status());
+                    #get values
+                    procName=proc.name();
+                    # procId=pid;
+                    # procPpid=proc.ppid();
+                    procStatus=proc.status();
+                    #format values
+                    if procName not in name_list:
+                        tdata_list.append({"{#PNAME}":procName , "{#PSTATUS}":procStatus});
+                        name_list.append(procName);
+
+    print(json.dumps({"data": tdata_list}, indent=4));
+
+else:
+    arg1=sys.argv[1];
+    for proc in psutil.process_iter():
+            if arg1 in proc.name():
+                tdata_list.append({"{#PNAME}":proc.name() , "{#PSTATUS}":proc.status()})
+                print(proc.status());
+
+    #print(json.dumps({"data": tdata_list}, indent=4));
